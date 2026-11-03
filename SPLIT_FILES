@@ -1,0 +1,8 @@
+6bf69d0eda41a12030d5f28d958cd09ce323bc0c13f1ab4d8bb426933aa08812 755 arm64/code-server/lib/node
+6dad14c5492d18076f1052e789a21bb94a11cbd5dad9d7206ceabba504047fe5 755 arm64/code-server/lib/vscode/extensions/copilot/node_modules/@github/copilot/sdk/prebuilds/linux-arm64/runtime.node
+cba3d7d0f334e027481a8aaadcde868dcd96400fc0f9cffcb46a54dcfe53cd96 755 arm64/code-server/lib/vscode/node_modules/@github/copilot-linux-arm64/prebuilds/linux-arm64/runtime.node
+90bfd09ac56d95f9f0b3c699a9eb7eafbf451d1b9d3664795267e319a67f3ac5 755 arm64/tode/node_modules/@zenbu-labs/pixel/electron/dist/pixel
+00d6f129a1103a072702a5dd1ef27dc159e25a26af1d06600498be8c5f9fc08b 755 x86_64/code-server/lib/node
+5dbbafdd65ffce5b89b62472e9303ce3854662bff399dae3ffda44a554c44849 755 x86_64/code-server/lib/vscode/extensions/copilot/node_modules/@github/copilot/sdk/prebuilds/linux-x64/runtime.node
+3abf0b327a19d0bae979dc9acf78f0b35a8c277ebd2d5eccfff67d0e4fea05b4 755 x86_64/code-server/lib/vscode/node_modules/@github/copilot-linux-x64/prebuilds/linux-x64/runtime.node
+9253135872e732329fe4131d06a929a0511c36d5e63764e2eab68bb9ba1a136a 755 x86_64/tode/node_modules/@zenbu-labs/pixel/electron/dist/pixel

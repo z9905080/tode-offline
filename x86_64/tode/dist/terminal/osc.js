@@ -1,0 +1,130 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseColor = parseColor;
+exports.parseReplies = parseReplies;
+exports.queryTerminal = queryTerminal;
+exports.withFallbacks = withFallbacks;
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_tty_1 = __importDefault(require("node:tty"));
+/** Terminals answer colour queries as rgb:RRRR/GGGG/BBBB, at whatever width they
+ * feel like, so each component is scaled by its own digit count. */
+function parseColor(reply) {
+    const match = /rgb:([0-9a-f]+)\/([0-9a-f]+)\/([0-9a-f]+)/i.exec(reply);
+    if (!match)
+        return null;
+    const scale = (raw) => Math.round((parseInt(raw, 16) / (16 ** raw.length - 1)) * 255);
+    return [scale(match[1]), scale(match[2]), scale(match[3])];
+}
+const OSC_REPLY = /\x1b\](\d+);(?:(\d+);)?([^\x07\x1b]*)(?:\x07|\x1b\\)/g;
+function parseReplies(raw) {
+    const ansi = new Array(16).fill(null);
+    let background = null;
+    let foreground = null;
+    for (const [, code, index, body] of raw.matchAll(OSC_REPLY)) {
+        const color = parseColor(body);
+        if (!color)
+            continue;
+        if (code === "11")
+            background = color;
+        else if (code === "10")
+            foreground = color;
+        else if (code === "4" && index !== undefined) {
+            const slot = Number(index);
+            if (slot >= 0 && slot < 16)
+                ansi[slot] = color;
+        }
+    }
+    return { background, foreground, ansi };
+}
+function buildQuery() {
+    const slots = Array.from({ length: 16 }, (_, index) => `\x1b]4;${index};?\x07`).join("");
+    // the device-attributes reply comes after the colours, so it marks the end
+    return `\x1b]11;?\x07\x1b]10;?\x07${slots}\x1b[c`;
+}
+const DONE = /\x1b\[\?[0-9;]*c/;
+function queryTerminal(idleMs = 400, capMs = 2000) {
+    return new Promise((resolve) => {
+        if (!process.stdout.isTTY)
+            return resolve(null);
+        let fd;
+        try {
+            fd = node_fs_1.default.openSync("/dev/tty", "r+");
+        }
+        catch {
+            return resolve(null);
+        }
+        let input = null;
+        let raw = "";
+        let settled = false;
+        const finish = (value) => {
+            if (settled)
+                return;
+            settled = true;
+            clearTimeout(idle);
+            clearTimeout(cap);
+            try {
+                input?.setRawMode(false);
+            }
+            catch { }
+            try {
+                if (input)
+                    input.destroy();
+                else
+                    node_fs_1.default.closeSync(fd);
+            }
+            catch { }
+            resolve(value);
+        };
+        const settle = () => finish(raw ? parseReplies(raw) : null);
+        let idle = setTimeout(settle, idleMs);
+        const cap = setTimeout(settle, capMs);
+        try {
+            input = new node_tty_1.default.ReadStream(fd);
+            if (!input.isTTY)
+                return finish(null);
+            input.setRawMode(true);
+            input.on("data", (chunk) => {
+                raw += chunk.toString("utf8");
+                if (DONE.test(raw))
+                    return finish(parseReplies(raw));
+                clearTimeout(idle);
+                idle = setTimeout(settle, idleMs);
+            });
+            input.on("error", () => finish(null));
+            node_fs_1.default.writeSync(fd, buildQuery());
+        }
+        catch {
+            finish(null);
+        }
+    });
+}
+// eh?
+// i see, this is that blue stuff. i suppose that's fine
+const FALLBACK_ANSI = [
+    [26, 27, 30],
+    [229, 72, 77],
+    [48, 164, 108],
+    [245, 165, 36],
+    [93, 156, 255],
+    [186, 148, 255],
+    [94, 201, 227],
+    [200, 205, 215],
+    [90, 96, 106],
+    [255, 108, 112],
+    [76, 194, 138],
+    [255, 196, 84],
+    [124, 178, 255],
+    [206, 176, 255],
+    [126, 220, 240],
+    [235, 238, 245],
+];
+function withFallbacks(parsed) {
+    return {
+        background: parsed?.background ?? [13, 15, 19],
+        foreground: parsed?.foreground ?? [230, 233, 239],
+        ansi: FALLBACK_ANSI.map((slot, index) => parsed?.ansi[index] ?? slot),
+    };
+}

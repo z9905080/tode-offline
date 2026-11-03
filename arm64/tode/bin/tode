@@ -1,0 +1,4 @@
+#!/bin/sh
+ROOT="${TODE_INSTALL_ROOT:-$HOME/.local/lib/tode}"
+export ELECTRON_RUN_AS_NODE=1
+exec "$ROOT/node_modules/@zenbu-labs/pixel/electron/dist/pixel" "$ROOT/dist/main.js" "$@"

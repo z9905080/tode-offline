@@ -1,0 +1,8 @@
+/arm64/code-server/lib/node
+/arm64/code-server/lib/vscode/extensions/copilot/node_modules/@github/copilot/sdk/prebuilds/linux-arm64/runtime.node
+/arm64/code-server/lib/vscode/node_modules/@github/copilot-linux-arm64/prebuilds/linux-arm64/runtime.node
+/arm64/tode/node_modules/@zenbu-labs/pixel/electron/dist/pixel
+/x86_64/code-server/lib/node
+/x86_64/code-server/lib/vscode/extensions/copilot/node_modules/@github/copilot/sdk/prebuilds/linux-x64/runtime.node
+/x86_64/code-server/lib/vscode/node_modules/@github/copilot-linux-x64/prebuilds/linux-x64/runtime.node
+/x86_64/tode/node_modules/@zenbu-labs/pixel/electron/dist/pixel
